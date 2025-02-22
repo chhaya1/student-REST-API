@@ -15,3 +15,8 @@ It should be able to perform the following operations using API.
 4. Update existing student information.
 
 5. Delete a student record
+
+
+# Containerise REST API
+
+Create Dockerfile to build and run the API.
