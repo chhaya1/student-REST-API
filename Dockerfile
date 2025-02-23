@@ -1,27 +1,34 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10-slim
+# Build Stage
+FROM python:3.10-alpine AS builder
 
-# Set the working directory in the container
+# Install build dependencies including libpq-dev and postgresql-client
+RUN apk update && apk add --no-cache build-base gcc musl-dev libpq-dev postgresql-client
+
 WORKDIR /app
 
-# Install system dependencies for psycopg2
-RUN apt-get update && apt-get install -y \
-    libpq-dev gcc
+# Copy requirements to install dependencies
+COPY requirements.txt .
 
-# Copy the requirements file first, then install dependencies
-COPY requirements.txt /app/requirements.txt
-
-# Install any needed packages specified in requirements.txt
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application files
-COPY . /app
+# Copy the application code
+COPY . .
 
-# Make port 5000 available to the world outside this container
+# Run Stage (Final Image)
+FROM python:3.10-alpine
+
+WORKDIR /app
+
+# Install libpq-dev and postgresql-client for psycopg2
+RUN apk add --no-cache libpq-dev postgresql-client
+
+# Copy dependencies and app code from the builder stage
+COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=builder /app /app
+
+# Expose Flask port
 EXPOSE 5000
 
-# Define environment variable for Flask
-ENV FLASK_APP=app.py
-
-# Run the application on container startup
-CMD ["flask", "run", "--host=0.0.0.0"]
+# Run Flask app
+CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000"]
