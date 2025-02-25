@@ -8,12 +8,16 @@ install:
 run-local:
 	python3 app.py
 
-# Docker setup:docker
+# Docker setup
 
 # Build Docker image
 build:
-	docker build -t student-api:1.0.0 .
+	docker build -t student-api:1.0.1 .
+
+# Run db container
+start-db:
+	docker-compose up -d db
 
 # Run the app as Docker container
 run-docker:
-	docker run -p 5001:5000 -e DATABASE_URL=postgresql://postgres:postgres@localhost:5432/students student-api:1.0.0
+	docker-compose up api
