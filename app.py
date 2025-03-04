@@ -1,94 +1,82 @@
 from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
-import psycopg2
 
-#Load environment variables from .env file
+# Load environment variables from .env file
 load_dotenv()
 
-#Get the database URL from environment variables
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-#Initialize Flask app
+# Initialize Flask app
 app = Flask(__name__)
 
-#Database connection using psycopg2
-def get_db_connection():
-    connection = psycopg2.connect(DATABASE_URL)
-    return connection 
+# Get the database URL from environment variables
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-#Healthcheck endpoint
+# Ensure the DATABASE_URL is set correctly
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable not set")
+
+# Configure SQLAlchemy with the database URL
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize SQLAlchemy and Migrate
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+# Define the Student model
+class Student(db.Model):
+    __tablename__ = 'students'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+    major = db.Column(db.String(50), nullable=True)
+
+# Healthcheck endpoint
 @app.route('/api/v1/healthcheck', methods=['GET'])
 def healthcheck():
-    conn = get_db_connection() 
-    if conn:
-        return jsonify({"status": "healthy", "db_url": DATABASE_URL}), 200
-    return jsonify({"status": "error", "message": "Could not connect to the database"}), 500
+    return jsonify({"status": "healthy"}), 200
 
-#Get all students
+# Get all students
 @app.route('/api/v1/students', methods=['GET'])
 def get_students():
-    conn = get_db_connection()
-    if conn:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM students;") 
-        students = cur.fetchall() 
-        cur.close()
-        return jsonify([{"id": student[0], "name": student[1], "age": student[2], "major": student[3]} for student in students]), 200
-    return jsonify({"error": "Database connection failed"}), 500
+    students = Student.query.all()  
+    return jsonify([{"id": student.id, "name": student.name, "age": student.age, "major": student.major} for student in students]), 200
 
-#Get a student by ID
+# Get a student by ID
 @app.route('/api/v1/students/<int:id>', methods=['GET'])
 def get_student(id):
-    conn = get_db_connection()
-    if conn:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM students WHERE id = %s;", (id,))
-        student = cur.fetchone()
-        cur.close() 
-        if student: 
-            return jsonify({"id": student[0], "name": student[1], "age": student[2], "major": student[3]}), 200
-        return jsonify({"error": "Student not found"}), 404
-    return jsonify({"error": "Database connection failed"}), 500
+    student = Student.query.get_or_404(id)
+    return jsonify({"id": student.id, "name": student.name, "age": student.age, "major": student.major}), 200
 
-#Add a new student
+# Add a new student
 @app.route('/api/v1/students', methods=['POST'])
 def add_student():
     new_student = request.get_json()
-    conn = get_db_connection()
-    if conn:
-        cur = conn.cursor()
-        cur.execute("INSERT INTO students (name, age) VALUES (%s, %s) RETURNING id;", 
-                    (new_student["name"], new_student["age"]))
-        student_id = cur.fetchone()[0]
-        conn.commit()
-        cur.close()
-        return jsonify({"id": student_id, "name": new_student["name"], "age": new_student["age"]}), 201
-    return jsonify
+    student = Student(name=new_student["name"], age=new_student["age"], major=new_student.get("major"))
+    db.session.add(student)
+    db.session.commit()
+    return jsonify({"id": student.id, "name": student.name, "age": student.age, "major": student.major}), 201
 
-#Update student information
+# Update an existing student
 @app.route('/api/v1/students/<int:id>', methods=['PUT'])
 def update_student(id):
-    updated_info = request.get_json()
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('UPDATE students SET name = %s, age = %s WHERE id = %s', 
-                (updated_info["name"], updated_info["age"], id))
-    conn.commit()
-    cur.close()
-    conn.close()
-    return jsonify({"message": "Student updated successfully"}), 200
+    student = Student.query.get_or_404(id)
+    updated_data = request.get_json()
+    student.name = updated_data.get("name", student.name)
+    student.age = updated_data.get("age", student.age)
+    student.major = updated_data.get("major", student.major)
+    db.session.commit()
+    return jsonify({"id": student.id, "name": student.name, "age": student.age, "major": student.major}), 200
 
-#Delete a student record
+# Delete a student
 @app.route('/api/v1/students/<int:id>', methods=['DELETE'])
 def delete_student(id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('DELETE FROM students WHERE id = %s', (id,))
-    conn.commit()
-    cur.close()
-    conn.close()
-    return jsonify({"message": "Student deleted"}), 200
+    student = Student.query.get_or_404(id)
+    db.session.delete(student)
+    db.session.commit()
+    return jsonify({"message": "Student deleted successfully"}), 200
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)

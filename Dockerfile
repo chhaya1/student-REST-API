@@ -1,34 +1,27 @@
-# Build Stage
-FROM python:3.10-alpine AS builder
+# Use a slim Python image
+FROM python:3.9-slim
 
-# Install build dependencies including libpq-dev and postgresql-client
-RUN apk update && apk add --no-cache build-base gcc musl-dev libpq-dev postgresql-client
-
+# Set the working directory
 WORKDIR /app
 
-# Copy requirements to install dependencies
+# Install bash, netcat-openbsd (alternative to netcat), and iputils-ping (for ping)
+RUN apt-get update && apt-get install -y bash netcat-openbsd iputils-ping
+
+# Copy the requirements.txt file and install the Python dependencies
 COPY requirements.txt .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code
+# Copy the rest of the application code
 COPY . .
 
-# Run Stage (Final Image)
-FROM python:3.10-alpine
+# Set environment variables
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
 
-WORKDIR /app
+# Initialize migrations if the folder doesn't exist
+RUN flask db init || true
 
-# Install libpq-dev and postgresql-client for psycopg2
-RUN apk add --no-cache libpq-dev postgresql-client
-
-# Copy dependencies and app code from the builder stage
-COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
-COPY --from=builder /app /app
-
-# Expose Flask port
-EXPOSE 5000
-
-# Run Flask app
-CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000"]
+RUN chmod +x app.sh
+CMD ./app.sh

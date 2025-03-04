@@ -1,6 +1,4 @@
-# Local setup:
-
-# Install dependencies
+# Install dependencies locally
 install:
 	pip install -r requirements.txt
 
@@ -13,11 +11,8 @@ run-local:
 # Build Docker image
 build:
 	docker build -t student-api:1.0.1 .
-
-# Run db container
-start-db:
-	docker-compose up -d db
-
-# Run the app as Docker container
-run-docker:
-	docker-compose up api
+start:
+	docker-compose up -d db  # Start DB container
+	flask db migrate -m "Initial migration"  # Run migration
+	flask db upgrade         # Apply migrations
+	docker-compose up -d api # Start API container

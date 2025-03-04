@@ -9,24 +9,10 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - .env
-    networks:
-      - my_network
-
-  db:
-    image: postgres:13
-    env_file:
-      - .env
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - ../.env
     networks:
       - my_network
 
 networks:
   my_network:
     driver: bridge
-
-volumes:
-  db_data:

@@ -1,22 +1,10 @@
 version: '3.8'
 
 services:
-  api:
-    image: student-api:1.0.1
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    env_file:
-      - .env
-    networks:
-      - my_network
-
   db:
     image: postgres:13
     env_file:
-      - .env
+      - ../.env
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
