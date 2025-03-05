@@ -1,27 +1,24 @@
-# Use a slim Python image
-FROM python:3.9-slim
+# Use official Python base image
+FROM python:3.9-alpine
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Install bash, netcat-openbsd (alternative to netcat), and iputils-ping (for ping)
-RUN apt-get update && apt-get install -y bash netcat-openbsd iputils-ping
-
-# Copy the requirements.txt file and install the Python dependencies
+# Copy requirements file into the container
 COPY requirements.txt .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy the application code
 COPY . .
 
 # Set environment variables
 ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_ENV=development
 
-# Initialize migrations if the folder doesn't exist
-RUN flask db init || true
+# Expose port 5000 for Flask
+EXPOSE 5000
 
-RUN chmod +x app.sh
-CMD ./app.sh
+# Command to run the application
+CMD ["flask", "run", "--host=0.0.0.0"]

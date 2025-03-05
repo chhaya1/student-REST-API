@@ -1,32 +1,29 @@
-version: '3.8'
+version: '3'
 
 services:
-  api:
-    image: student-api:1.0.1
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    env_file:
-      - .env
-    networks:
-      - my_network
-
   db:
-    image: postgres:13
-    env_file:
-      - .env
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    networks:
-      - my_network
 
-networks:
-  my_network:
-    driver: bridge
+  api:
+    build:
+      context: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    command: flask run --host=0.0.0.0
 
 volumes:
-  db_data:
+  db-data:
