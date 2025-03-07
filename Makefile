@@ -1,3 +1,6 @@
+DOCKER_IMAGE=chhaya786/student-api
+VERSION=1.0.1
+
 # Target to start the DB container
 start-db:
 	docker-compose up -d db
@@ -30,3 +33,18 @@ run:
 	make migrate-db
 	make upgrade-db
 	make run-api
+
+# Target to run the tests
+test:
+	python -m unittest discover
+
+# Target to perform linting
+lint:
+	pylint app.py
+
+
+# Target to build and push Docker image to DockerHub with both 'latest' and version tags
+docker-push:
+	docker build -t $(DOCKER_IMAGE):$(VERSION) 
+	docker push $(DOCKER_IMAGE):$(VERSION)
+
