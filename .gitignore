@@ -1,2 +1,7 @@
 actions-runner/
-__pycache__/
+*.tar.gz
+*.zip
+*.7z
+.env
+.DS_Store
+venv/
