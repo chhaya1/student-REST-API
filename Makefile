@@ -42,7 +42,11 @@ test:
 lint:
 	pylint app.py
 
+<<<<<<< Updated upstream
 # Target to build and push Docker image to DockerHub with version tags
+=======
+# Target to build and push Docker image to DockerHub
+>>>>>>> Stashed changes
 docker-push:
 	docker build -t $(DOCKER_IMAGE):$(VERSION) 
 	docker push $(DOCKER_IMAGE):$(VERSION)
