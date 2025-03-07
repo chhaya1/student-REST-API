@@ -1,1 +1,2 @@
+actions-runner/** filter=lfs diff=lfs merge=lfs -text
 actions-runner/**/* filter=lfs diff=lfs merge=lfs -text
