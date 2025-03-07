@@ -42,7 +42,7 @@ test:
 lint:
 	pylint app.py
 
-# Target to build and push Docker image to DockerHub with both 'latest' and version tags
+# Target to build and push Docker image to DockerHub with version tags
 docker-push:
 	docker build -t $(DOCKER_IMAGE):$(VERSION) 
 	docker push $(DOCKER_IMAGE):$(VERSION)
