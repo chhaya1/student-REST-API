@@ -1,7 +1,3 @@
-actions-runner/
-*.tar.gz
-*.zip
-*.7z
-.env
-.DS_Store
-venv/
+/actions-runner/
+/*.tar.gz
+/externals/
