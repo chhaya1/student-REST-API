@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - main  # This will trigger the workflow on push to the 'main' branch
-    paths:
-      - "app.py"
-      - "docker-compose.yml"
-      - "Dockerfile"
-      - "requirements.txt"
 
 jobs:
   build:
