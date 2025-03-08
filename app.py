@@ -3,11 +3,12 @@ This module defines a simple Flask REST API for managing student records.
 It uses SQLAlchemy for database operations and Flask-Migrate for handling migrations.
 """
 
-from flask import Flask, jsonify, request
+import os  # Standard library import
+
+from flask import Flask, jsonify, request  # Third-party imports
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
-import os
 
 # Load environment variables from .env file
 load_dotenv()
@@ -59,8 +60,12 @@ def get_students():
     Get a list of all students.
     """
     students = Student.query.all()
-    return jsonify([{"id": student.id, "name": student.name, "age": student.age, "major": student.major}
-                    for student in students]), 200
+    return jsonify([{
+        "id": student.id,
+        "name": student.name,
+        "age": student.age,
+        "major": student.major
+    } for student in students]), 200
 
 
 # Get a student by ID
@@ -70,7 +75,12 @@ def get_student(student_id):
     Get a student by their ID.
     """
     student = Student.query.get_or_404(student_id)
-    return jsonify({"id": student.id, "name": student.name, "age": student.age, "major": student.major}), 200
+    return jsonify({
+        "id": student.id,
+        "name": student.name,
+        "age": student.age,
+        "major": student.major
+    }), 200
 
 
 # Add a new student
@@ -80,10 +90,19 @@ def add_student():
     Add a new student to the database.
     """
     new_student = request.get_json()
-    student = Student(name=new_student["name"], age=new_student["age"], major=new_student.get("major"))
+    student = Student(
+        name=new_student["name"],
+        age=new_student["age"],
+        major=new_student.get("major")
+    )
     db.session.add(student)  # pylint: disable=no-member
     db.session.commit()  # pylint: disable=no-member
-    return jsonify({"id": student.id, "name": student.name, "age": student.age, "major": student.major}), 201
+    return jsonify({
+        "id": student.id,
+        "name": student.name,
+        "age": student.age,
+        "major": student.major
+    }), 201
 
 
 # Update an existing student
@@ -98,7 +117,12 @@ def update_student(student_id):
     student.age = updated_data.get("age", student.age)
     student.major = updated_data.get("major", student.major)
     db.session.commit()  # pylint: disable=no-member
-    return jsonify({"id": student.id, "name": student.name, "age": student.age, "major": student.major}), 200
+    return jsonify({
+        "id": student.id,
+        "name": student.name,
+        "age": student.age,
+        "major": student.major
+    }), 200
 
 
 # Delete a student
@@ -115,3 +139,5 @@ def delete_student(student_id):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+# Add a final newline
