@@ -13,7 +13,7 @@ init-migrations:
 migrate-db:
 	docker-compose run api flask db migrate
 
-# Target to apply migrations to the DB (run 'flask db upgrade')
+# Target to apply migrations to the DB.
 upgrade-db:
 	docker-compose run api flask db upgrade
 
