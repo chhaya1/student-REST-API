@@ -52,7 +52,7 @@ def healthcheck():
     """
     return jsonify({"status": "healthy"}), 200
 
-# Get all students
+# Get all the students
 @app.route('/api/v1/students', methods=['GET'])
 def get_students():
     """
