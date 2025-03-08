@@ -12,7 +12,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load envvarae
 load_dotenv()
 
 # Initialize Flask app
