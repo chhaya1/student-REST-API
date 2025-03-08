@@ -21,7 +21,7 @@ app = Flask(__name__)
 # Get the database URL from environment variables
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Ensure the DATABASE_URL is set correctly
+# Ensure the DATABASE_URL set correctly
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable not set")
 
