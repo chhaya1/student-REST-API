@@ -1,11 +1,13 @@
+# pylint: disable=R0903
+
 """
 This module defines a simple Flask REST API for managing student records.
 It uses SQLAlchemy for database operations and Flask-Migrate for handling migrations.
 """
 
-import os  # Standard library import
+import os  
 
-from flask import Flask, jsonify, request  # Third-party imports
+from flask import Flask, jsonify, request  
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
@@ -140,4 +142,4 @@ def delete_student(student_id):
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
 
-# Add a final newline
+
