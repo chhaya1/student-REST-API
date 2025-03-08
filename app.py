@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Initialize Flask app (app)
+# Initialize Flask app (app).
 app = Flask(__name__)
 
 # Get the database URL from environment variables
