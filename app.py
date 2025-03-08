@@ -5,14 +5,14 @@ This module defines a simple Flask REST API for managing student records.
 It uses SQLAlchemy for database operations and Flask-Migrate for handling migrations.
 """
 
-import os  
+import os
 
-from flask import Flask, jsonify, request  
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 
-# Load envvarae
+# Load environment variables
 load_dotenv()
 
 # Initialize Flask app
@@ -33,7 +33,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-
 # Define the Student model
 class Student(db.Model):
     """
@@ -45,7 +44,6 @@ class Student(db.Model):
     age = db.Column(db.Integer, nullable=False)  # pylint: disable=no-member
     major = db.Column(db.String(50), nullable=True)  # pylint: disable=no-member
 
-
 # Healthcheck endpoint
 @app.route('/api/v1/healthcheck', methods=['GET'])
 def healthcheck():
@@ -53,7 +51,6 @@ def healthcheck():
     Healthcheck endpoint to verify if the API is running.
     """
     return jsonify({"status": "healthy"}), 200
-
 
 # Get all students
 @app.route('/api/v1/students', methods=['GET'])
@@ -69,7 +66,6 @@ def get_students():
         "major": student.major
     } for student in students]), 200
 
-
 # Get a student by ID
 @app.route('/api/v1/students/<int:student_id>', methods=['GET'])
 def get_student(student_id):
@@ -83,7 +79,6 @@ def get_student(student_id):
         "age": student.age,
         "major": student.major
     }), 200
-
 
 # Add a new student
 @app.route('/api/v1/students', methods=['POST'])
@@ -106,7 +101,6 @@ def add_student():
         "major": student.major
     }), 201
 
-
 # Update an existing student
 @app.route('/api/v1/students/<int:student_id>', methods=['PUT'])
 def update_student(student_id):
@@ -126,7 +120,6 @@ def update_student(student_id):
         "major": student.major
     }), 200
 
-
 # Delete a student
 @app.route('/api/v1/students/<int:student_id>', methods=['DELETE'])
 def delete_student(student_id):
@@ -138,8 +131,5 @@ def delete_student(student_id):
     db.session.commit()  # pylint: disable=no-member
     return jsonify({"message": "Student deleted successfully"}), 200
 
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
-
