@@ -1,3 +1,4 @@
 actions-runner/actions-runner-linux-x64-2.322.0.tar.gz
 .env
 /*.tar.gz
+actions-runner/_diag/*
