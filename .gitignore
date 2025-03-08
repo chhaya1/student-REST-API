@@ -2,3 +2,11 @@ actions-runner/actions-runner-linux-x64-2.322.0.tar.gz
 .env
 /*.tar.gz
 actions-runner/_diag/*
+
+__pycache__/
+*.pyc
+
+actions-runner/
+
+*.dist-info/
+*.egg-info/
