@@ -1,5 +1,5 @@
 DOCKER_IMAGE=chhaya786/student-api
-VERSION=1.0.0
+VERSION=1.0.1
 
 # Target to start the DB container
 start-db:
