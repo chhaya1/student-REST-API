@@ -140,3 +140,169 @@ The following endpoints are available in the API:
      ```json
      {"message": "Student deleted successfully"}
      ```
+
+
+## GitHub Actions CI Pipeline
+
+This project uses GitHub Actions for continuous integration. The pipeline is defined in `.github/workflows/docker-build.yml`. It performs the following steps:
+
+### Workflow Triggers
+
+The pipeline is triggered by a push to the `main` branch.
+
+### Pipeline Jobs
+
+The pipeline consists of the following steps:
+
+1. **Checkout the Code**:
+   - The repository is cloned using the `actions/checkout@v3` action.
+
+   ```
+   git clone https://github.com/chhaya1/student-REST-API.git
+   ```
+2. **Set up Python 3.9**:
+
+The Python environment is set up using the actions/setup-python@v3 action.
+
+```
+sudo apt-get install python3.9
+```
+
+3. **Install Dependencies**:
+
+The pipeline installs the required Python dependencies from requirements.txt and the linting tool pylint.
+Bash Equivalent:
+
+```
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install pylint
+```
+
+4. **Perform Linting**:
+
+The code is checked for style and syntax errors using pylint.
+
+```
+make lint
+```
+
+5. **Set up Docker Buildx**:
+
+Docker Buildx is set up using the docker/setup-buildx-action@v2 action to build and push multi-platform Docker images.
+
+6. **Log in to DockerHub**:
+
+Create an account on DockerHub and DockerHub login is performed using the docker/login-action@v2. It uses GitHub Secrets to store the DockerHub credentials:
+
+DOCKER_USERNAME
+DOCKER_PASSWORD
+
+```
+echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+```
+
+7. **Build and Push Docker Image**:
+
+The Docker image is built and pushed to DockerHub using a Makefile command. The image is tagged as chhaya786/student-api:1.0.1.
+
+```
+make docker-push
+```
+
+8. **Environment Variables**:
+The following environment variables are used in the GitHub Actions pipeline:
+
+DOCKER_USERNAME: DockerHub username stored as a GitHub secret.
+DOCKER_PASSWORD: DockerHub password stored as a GitHub secret.
+DOCKER_IMAGE: The image name and version used to tag the Docker image (e.g., chhaya786/student-api:1.0.1).
+
+9. **Adding Secrets to GitHub**
+Ensure that your DockerHub credentials (DOCKER_USERNAME and DOCKER_PASSWORD) are stored as GitHub secrets:
+
+Go to your repository on GitHub. Click on Settings > Secrets and variables > Actions.
+
+Add the following secrets:
+DOCKER_USERNAME: Your DockerHub username.
+DOCKER_PASSWORD: Your DockerHub password.
+
+
+## Setting up GitHub Actions Runner (Self-hosted)
+
+This project uses a self-hosted GitHub Actions runner to execute the CI pipeline. Follow these steps to install, configure, and start a GitHub Actions runner on your own infrastructure.
+
+### Prerequisites
+
+- A server or VM with at least 2 CPU cores and 4 GB of RAM.
+- Ubuntu (preferred) or any compatible Linux distribution.
+- `Docker` and `Python` should be installed on the runner machine.
+
+### Step 1: Install Docker
+
+If Docker is not installed, you can install it using the following commands:
+
+```
+# Update the package index
+sudo apt-get update
+
+# Install Docker
+sudo apt-get install -y docker.io
+
+# Start Docker
+sudo systemctl start docker
+
+# Enable Docker to start on boot
+sudo systemctl enable docker
+```
+
+### Step 2: Install Python 3.9 (if not installed)
+
+If Python 3.9 is not already installed, run the following commands:
+
+```
+sudo apt-get update
+sudo apt-get install -y python3.9 python3-pip
+```
+
+### Step 3: Download and Configure GitHub Actions Runner
+
+Download the runner: 
+Go to your repository on GitHub, navigate to Settings > Actions > Runners, and follow the instructions to create a self-hosted runner. The specific download URL and token will be provided by GitHub.
+
+Here is an example of how to download and configure the runner:
+
+```
+# Navigate to a folder to install the runner
+mkdir actions-runner && cd actions-runner
+
+# Download the latest runner package (replace the URL with the one GitHub provides)
+curl -o actions-runner-linux-x64-2.292.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.292.0/actions-runner-linux-x64-2.292.0.tar.gz
+
+# Extract the installer
+tar xzf ./actions-runner-linux-x64-2.292.0.tar.gz
+```
+
+# Configure the runner: Register the runner with your repository using the registration token that GitHub provides:
+
+```
+# Replace the URL with your repository URL and token from GitHub
+./config.sh --url https://github.com/yourusername/yourrepo --token YOUR_TOKEN_HERE
+```
+
+The --url should point to your GitHub repository.
+The --token is a registration token from the GitHub repository's runner setup page.
+
+### Step 4: Start the GitHub Actions Runner
+After the runner is configured, you need to start the runner service. You can run it in the foreground or as a service.
+
+Run the runner in the foreground (for testing):
+
+```
+./run.sh
+```
+
+### Step 5: Verify the Runner
+
+Once the runner is started, it should appear as Online in the Settings > Actions > Runners section of your GitHub repository.
+
+You can now trigger your GitHub Actions workflows, and they will run on your self-hosted runner.
