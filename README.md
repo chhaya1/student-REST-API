@@ -303,6 +303,6 @@ Run the runner in the foreground (for testing):
 
 ### Step 5: Verify the Runner
 
-Once the runner is started, it should appear as Online in the Settings > Actions > Runners section of your GitHub repository.
+Once the runner is started, it should appear as Online in the Settings > Actions > Runners section of GitHub repository.
 
 You can now trigger your GitHub Actions workflows, and they will run on your self-hosted runner.
