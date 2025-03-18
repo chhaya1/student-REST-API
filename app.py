@@ -6,6 +6,7 @@ It uses SQLAlchemy for database operations and Flask-Migrate for handling migrat
 """
 
 import os
+import socket
 
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
@@ -45,12 +46,14 @@ class Student(db.Model):
     major = db.Column(db.String(50), nullable=True)  # pylint: disable=no-member
 
 # Healthcheck endpoint
+
 @app.route('/api/v1/healthcheck', methods=['GET'])
 def healthcheck():
     """
     Healthcheck endpoint to verify if the API is running.
     """
-    return jsonify({"status": "healthy"}), 200
+    return jsonify({"status": "healthy", "container": socket.gethostname()}), 200
+
 
 # Get all the students
 @app.route('/api/v1/students', methods=['GET'])
