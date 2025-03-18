@@ -301,7 +301,7 @@ Run the runner in the foreground (for testing):
 ./run.sh
 ```
 
-### Step 5: Verify the Runner
+### Step 5: Verify the Self-hosted Runner
 
 Once the runner is started, it should appear as Online in the Settings > Actions > Runners section of GitHub repository.
 
