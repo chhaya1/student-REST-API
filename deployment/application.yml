@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: student-api
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: student-api-config
+  namespace: student-api
+data:
+  DATABASE_URL: "postgresql://postgres:$(POSTGRES_PASSWORD)@postgres:5432/student"
+
+---
+
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: db-secret
+  namespace: student-api
+spec:
+  refreshInterval: 1m
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: db-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: password
+      remoteRef:
+        key: secret/db
+        property: password
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: student-api
+  namespace: student-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: student-api
+  template:
+    metadata:
+      labels:
+        app: student-api
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:15-alpine
+          command:
+            - "sh"
+            - "-c"
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until pg_isready -h postgres -p 5432 -U postgres; do 
+                echo "PostgreSQL is unavailable - sleeping"; 
+                sleep 2; 
+              done
+              echo "PostgreSQL is ready!"
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+
+        - name: db-migrate
+          image: chhaya786/student-api:1.0.2
+          command:
+            - "sh"
+            - "-c"
+            - |
+              echo "Running conditional Flask DB migration..."
+              export DATABASE_URL=postgresql://postgres:$POSTGRES_PASSWORD@postgres:5432/student
+
+              CURRENT_REV=$(flask db current 2>/dev/null | grep -oE '[a-f0-9]+')
+              HEAD_REV=$(flask db heads | grep -oE '[a-f0-9]+')
+
+              if [ "$CURRENT_REV" = "$HEAD_REV" ]; then
+                echo "Database is already up-to-date. Skipping migration."
+              else
+                echo "Running migrations..."
+                flask db upgrade
+                echo "Migrations complete!"
+              fi
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+            - name: FLASK_APP
+              value: "app.py"
+            - name: DATABASE_URL
+              value: "postgresql://postgres:$(POSTGRES_PASSWORD)@postgres:5432/student"
+
+      containers:
+        - name: student-api
+          image: chhaya786/student-api:1.0.2
+          ports:
+            - containerPort: 5000
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: student-api-config
+                  key: DATABASE_URL
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: student-api-service
+  namespace: student-api
+spec:
+  selector:
+    app: student-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: NodePort
