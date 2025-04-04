@@ -431,9 +431,11 @@ Make sure the Kubernetes ExternalSecret resource points to the Vault key paths.
    ```
    kubectl get svc -n student-api
    ```
-2. Test the API
+2. Test the API working
    ```
    curl http://localhost:5000/api/v1/students
    ```
+
+
 
 
