@@ -308,8 +308,7 @@ Once the runner is started, it should appear as Online in the Settings > Actions
 You can now trigger your GitHub Actions workflows, and they will run on your self-hosted runner.
 
 
-##  Setup Instructions
-
+##  Setup Instructions for Kubernetes cluster set up with minikube, Vault (secret management) and Kubernetes External secrets store operator
 1. Start Minikube with 3 nodes
 
 ```
@@ -330,3 +329,111 @@ kubectl label node minikube-m04 type=dependent_services
 ```
 kubectl get nodes --show-labels
 ```
+5. Create Kubernetes manifests (yml files) for Application and deoploy it.
+
+```
+kubectl apply -f k8s/student-api/application.yml
+```
+6. Create Kubernetes manifests (yml file) for database and deploy the Database (with Init Container for DB Migrations)
+
+```
+kubectl apply -f k8s/database/database.yml
+```
+
+7. Install HashiCorp Vault in Dev Mode Using Helm on Kubernetes
+   1. Add the HashiCorp Helm repo
+      ```
+      helm repo add hashicorp https://helm.releases.hashicorp.com
+      helm repo update
+      ```
+   2. Install Vault in dev mode using Helm
+      ```
+      helm install vault hashicorp/vault \
+      --set "server.dev.enabled=true"
+      ```
+      This deploys Vault in dev mode, which is already unsealed by default
+
+      Generates a new root token each time it's started
+
+      Stores data in-memory only (non-persistent) which is meant for testing/dev only
+
+   3. Verify that the Vault pod is running
+      ```
+      kubectl get pods -n default
+      ```
+
+   4. Check Vault logs to get the root token
+      ```
+      kubectl logs vault-0
+      ```
+      Look for the root token in the logs:
+
+      ==> Vault server started! Log data will stream in below:
+      ...
+      Root Token: s.xxx
+
+8. Install External Secrets Operator (ESO) 
+   1. Add the External Secrets Helm repo
+      ```
+      helm repo add external-secrets https://charts.external-secrets.io
+      helm repo update
+      ```
+   2. Create the external-secrets namespace
+      ```
+      kubectl create namespace external-secrets
+      ```
+   3. Install the External Secrets Operator using Helm
+      ```   
+      helm install external-secrets external-secrets/external-secrets \
+      --namespace external-secrets
+      ```
+      This installs the ESO controller in the specified namespace.
+
+   4. Verify the ESO pods are running
+      ```
+      kubectl get pods -n external-secrets
+      ```
+
+
+9. Connect ESO to HashiCorp Vault
+   1. Enable Kubernetes auth method in Vault
+      ```
+      kubectl exec -it <vault-pod> -- /bin/sh
+      ```
+      Then run these commands inside the Vault shell:
+      ```
+      vault auth enable kubernetes
+      ```
+
+10. Create secrets in Vault:
+    ```
+    vault kv put secret/db password=postgres
+    ```
+
+11. Configure External Secrets to Use Vault
+
+    ```
+    kubectl apply -f cluster-secret-store.yml
+    ```
+
+
+Make sure the Kubernetes ExternalSecret resource points to the Vault key paths.
+
+## Accessing the API
+
+1. Check the deployment done successfully:
+
+   ```
+   kubectl get pods -n student-api
+   ```
+
+   After successful deployment, check service account
+   ```
+   kubectl get svc -n student-api
+   ```
+2. Test the API
+   ```
+   curl http://localhost:5000/api/v1/students
+   ```
+
+
