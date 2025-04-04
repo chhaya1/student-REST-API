@@ -306,3 +306,27 @@ Run the runner in the foreground (for testing):
 Once the runner is started, it should appear as Online in the Settings > Actions > Runners section of GitHub repository.
 
 You can now trigger your GitHub Actions workflows, and they will run on your self-hosted runner.
+
+
+##  Setup Instructions
+
+1. Start Minikube with 3 nodes
+
+```
+minikube start --nodes=3
+```
+
+2. Verify all nodes are ready
+```
+kubectl get nodes
+3. Label the nodes
+```
+```
+kubectl label node minikube-m02 type=application
+kubectl label node minikube-m03 type=database
+kubectl label node minikube-m04 type=dependent_services
+```
+4. Confirm the labels
+```
+kubectl get nodes --show-labels
+```
