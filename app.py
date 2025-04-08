@@ -1,4 +1,4 @@
-# pylint: disable=R0903
+# pylint: disable=R0903, C0301
 
 """
 This module defines a simple Flask REST API for managing student records.
@@ -11,6 +11,7 @@ import socket
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from sqlalchemy import Column, Integer, String  # ✅ Correctly import Column types
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -37,9 +38,9 @@ migrate = Migrate(app, db)
 # Define the Student model
 class Student(db.Model):
     """Model representing a student."""
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    age = db.Column(db.Integer, nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False)
+    age = Column(Integer, nullable=False)
 
 # Define routes
 @app.route("/students", methods=["GET"])
@@ -52,19 +53,15 @@ def get_students():
 def create_student():
     """Create a new student record."""
     data = request.get_json()
-    new_student = Student(name=data['name'], age=data['age'])
-    db.session.add(new_student)
-    db.session.commit()
+    new_student = Student(name=data["name"], age=data["age"])
+    db.session.add(new_student)  # ✅ Correct: use db.session
+    db.session.commit()          # ✅ Correct: use db.session
     return jsonify({"message": "Student created successfully"}), 201
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    """Check the health of the application."""
+    """Health check endpoint."""
     return jsonify({
         "status": "OK",
         "hostname": socket.gethostname()
     })
-
-# Run the app (optional, usually not needed if using gunicorn/uwsgi)
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
