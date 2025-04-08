@@ -10,3 +10,4 @@ actions-runner/
 
 *.dist-info/
 *.egg-info/
+deployment/vault-token-secret.yml
