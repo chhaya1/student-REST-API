@@ -1,4 +1,4 @@
-# pylint: disable=R0903
+# pylint: disable=R0903, E1101
 
 """
 This module defines a simple Flask REST API for managing student records.
@@ -10,7 +10,7 @@ import socket
 
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String  # <-- FIXED import
+from sqlalchemy import Column, Integer, String
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 
@@ -52,9 +52,9 @@ def health_check():
     return jsonify({"message": f"Hello from {hostname}!"})
 
 @app.route("/students", methods=["POST"])
-def add_student():
+def create_student():
     """
-    Endpoint to add a new student.
+    Create a new student.
     """
     data = request.get_json()
     name = data.get("name")
@@ -63,11 +63,18 @@ def add_student():
     if not name or age is None:
         return jsonify({"error": "Name and age are required"}), 400
 
-    new_student = Student(name=name, age=age)
-    db.session.add(new_student)
-    db.session.commit()
+    student = Student(name=name, age=age)
 
-    return jsonify({"message": "Student added successfully"}), 201
+    db.session.add(student)  # pylint: disable=no-member
+    db.session.commit()      # pylint: disable=no-member
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    return jsonify({"message": "Student created successfully"}), 201
+
+@app.route("/students", methods=["GET"])
+def get_students():
+    """
+    Retrieve all students.
+    """
+    students = Student.query.all()
+    result = [{"id": s.id, "name": s.name, "age": s.age} for s in students]
+    return jsonify(result)
