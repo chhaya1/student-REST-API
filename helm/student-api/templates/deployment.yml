@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: {{ .Values.database.image }}
+          command:
+            - "sh"
+            - "-c"
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until pg_isready -h postgres -p 5432 -U postgres; do
+                echo "PostgreSQL is unavailable - sleeping";
+                sleep 2;
+              done
+              echo "PostgreSQL is ready!"
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.deployment.image }}
+          ports:
+            - containerPort: {{ .Values.deployment.containerPort }}
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.externalSecret.name }}
+                  key: password
+            - name: DATABASE_URL
+              value: "postgresql://postgres:$(POSTGRES_PASSWORD)@postgres:5432/student"

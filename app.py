@@ -45,6 +45,10 @@ class Student(db.Model):
     age = db.Column(db.Integer, nullable=False)  # pylint: disable=no-member
     major = db.Column(db.String(50), nullable=True)  # pylint: disable=no-member
 
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
 # Healthcheck endpoint
 
 @app.route('/api/v1/healthcheck', methods=['GET'])

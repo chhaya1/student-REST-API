@@ -1,0 +1,55 @@
+namespace: student-api
+
+vault:
+  server: "http://vault.vault.svc.cluster.local:8200"
+  path: "student-api/"
+  auth:
+    role: "student-api"
+
+deployment:
+  image: "chhaya786/student-api:1.0.2"
+  replicas: 1
+  containerPort: 8080
+  env:
+    - name: POSTGRES_USER
+      valueFrom:
+        secretKeyRef:
+          name: db-secret
+          key: POSTGRES_USER
+    - name: POSTGRES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: db-secret
+          key: POSTGRES_PASSWORD
+    - name: POSTGRES_DB
+      valueFrom:
+        secretKeyRef:
+          name: db-secret
+          key: POSTGRES_DB
+    - name: POSTGRES_HOST
+      value: "postgres"
+    - name: DATABASE_URL
+      value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)"
+
+configMap:
+  name: student-api-config
+
+externalSecret:
+  name: db-secret
+  remoteSecretName: student-api
+
+nginx:
+  config: |
+    events {}
+    http {
+      server {
+        listen 80;
+        location / {
+          proxy_pass http://student-api:8080;
+        }
+      }
+    }
+
+database:
+  image: postgres:15
+  containerPort: 5432
