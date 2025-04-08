@@ -1,4 +1,4 @@
-# pylint: disable=R0903, C0301
+# pylint: disable=R0903
 
 """
 This module defines a simple Flask REST API for managing student records.
@@ -11,7 +11,6 @@ import socket
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy import Column, Integer, String  # ✅ Correctly import Column types
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -35,33 +34,71 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Define the Student model
 class Student(db.Model):
-    """Model representing a student."""
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50), nullable=False)
-    age = Column(Integer, nullable=False)
+    """
+    Student model represents a student record in the database.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
 
-# Define routes
+@app.route("/", methods=["GET"])
+def health_check():
+    """
+    Health check endpoint.
+    """
+    hostname = socket.gethostname()
+    return jsonify({"message": "Student API is up and running!", "hostname": hostname})
+
 @app.route("/students", methods=["GET"])
 def get_students():
-    """Fetch all students from the database."""
+    """
+    Get all students.
+    """
     students = Student.query.all()
-    return jsonify([{"id": student.id, "name": student.name, "age": student.age} for student in students])
+    student_list = [{"id": student.id, "name": student.name, "age": student.age} for student in students]
+    return jsonify(student_list)
 
 @app.route("/students", methods=["POST"])
 def create_student():
-    """Create a new student record."""
+    """
+    Create a new student record.
+    """
     data = request.get_json()
     new_student = Student(name=data["name"], age=data["age"])
-    db.session.add(new_student)  # ✅ Correct: use db.session
-    db.session.commit()          # ✅ Correct: use db.session
-    return jsonify({"message": "Student created successfully"}), 201
+    db.session.add(new_student)  # pylint: disable=E1101
+    db.session.commit()          # pylint: disable=E1101
+    return jsonify({"message": "Student created"}), 201
 
-@app.route("/health", methods=["GET"])
-def health_check():
-    """Health check endpoint."""
-    return jsonify({
-        "status": "OK",
-        "hostname": socket.gethostname()
-    })
+@app.route("/students/<int:student_id>", methods=["GET"])
+def get_student(student_id):
+    """
+    Get a student by ID.
+    """
+    student = Student.query.get_or_404(student_id)
+    return jsonify({"id": student.id, "name": student.name, "age": student.age})
+
+@app.route("/students/<int:student_id>", methods=["PUT"])
+def update_student(student_id):
+    """
+    Update a student's information.
+    """
+    student = Student.query.get_or_404(student_id)
+    data = request.get_json()
+    student.name = data.get("name", student.name)
+    student.age = data.get("age", student.age)
+    db.session.commit()  # pylint: disable=E1101
+    return jsonify({"message": "Student updated"})
+
+@app.route("/students/<int:student_id>", methods=["DELETE"])
+def delete_student(student_id):
+    """
+    Delete a student record.
+    """
+    student = Student.query.get_or_404(student_id)
+    db.session.delete(student)  # pylint: disable=E1101
+    db.session.commit()         # pylint: disable=E1101
+    return jsonify({"message": "Student deleted"})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
