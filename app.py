@@ -10,7 +10,7 @@ import socket
 
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String  # <-- FIXED import
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 
@@ -49,27 +49,25 @@ def health_check():
     Health check endpoint.
     """
     hostname = socket.gethostname()
-    return jsonify({"message": "Student API is up and running!", "hostname": hostname})
-
-@app.route("/students", methods=["GET"])
-def get_students():
-    """
-    Get all students.
-    """
-    students = Student.query.all()
-    student_list = [{"id": student.id, "name": student.name, "age": student.age} for student in students]
-    return jsonify(student_list)
+    return jsonify({"message": f"Hello from {hostname}!"})
 
 @app.route("/students", methods=["POST"])
 def add_student():
     """
-    Add a new student.
+    Endpoint to add a new student.
     """
     data = request.get_json()
-    new_student = Student(name=data["name"], age=data["age"])
+    name = data.get("name")
+    age = data.get("age")
+
+    if not name or age is None:
+        return jsonify({"error": "Name and age are required"}), 400
+
+    new_student = Student(name=name, age=age)
     db.session.add(new_student)
     db.session.commit()
-    return jsonify({"message": "Student added successfully!"}), 201
+
+    return jsonify({"message": "Student added successfully"}), 201
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
