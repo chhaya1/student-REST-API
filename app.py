@@ -10,6 +10,7 @@ import socket
 
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import Column, Integer, String
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 
@@ -38,9 +39,9 @@ class Student(db.Model):
     """
     Student model represents a student record in the database.
     """
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    age = db.Column(db.Integer, nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    age = Column(Integer, nullable=False)
 
 @app.route("/", methods=["GET"])
 def health_check():
@@ -60,45 +61,15 @@ def get_students():
     return jsonify(student_list)
 
 @app.route("/students", methods=["POST"])
-def create_student():
+def add_student():
     """
-    Create a new student record.
+    Add a new student.
     """
     data = request.get_json()
     new_student = Student(name=data["name"], age=data["age"])
-    db.session.add(new_student)  # pylint: disable=E1101
-    db.session.commit()          # pylint: disable=E1101
-    return jsonify({"message": "Student created"}), 201
-
-@app.route("/students/<int:student_id>", methods=["GET"])
-def get_student(student_id):
-    """
-    Get a student by ID.
-    """
-    student = Student.query.get_or_404(student_id)
-    return jsonify({"id": student.id, "name": student.name, "age": student.age})
-
-@app.route("/students/<int:student_id>", methods=["PUT"])
-def update_student(student_id):
-    """
-    Update a student's information.
-    """
-    student = Student.query.get_or_404(student_id)
-    data = request.get_json()
-    student.name = data.get("name", student.name)
-    student.age = data.get("age", student.age)
-    db.session.commit()  # pylint: disable=E1101
-    return jsonify({"message": "Student updated"})
-
-@app.route("/students/<int:student_id>", methods=["DELETE"])
-def delete_student(student_id):
-    """
-    Delete a student record.
-    """
-    student = Student.query.get_or_404(student_id)
-    db.session.delete(student)  # pylint: disable=E1101
-    db.session.commit()         # pylint: disable=E1101
-    return jsonify({"message": "Student deleted"})
+    db.session.add(new_student)
+    db.session.commit()
+    return jsonify({"message": "Student added successfully!"}), 201
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
