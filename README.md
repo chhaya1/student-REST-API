@@ -436,6 +436,43 @@ Make sure the Kubernetes ExternalSecret resource points to the Vault key paths.
    curl http://localhost:5000/api/v1/students
    ```
 
+### Set up of Helm and Deployment using Helm
+
+1. Create a new Helm chart for the application
+```
+mkdir helm
+cd helm
+helm create student-api
+```
+
+2. Pull Required Charts (PostgreSQL & Vault)
+
+# Add Helm repositories
+```
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add hashicorp https://helm.releases.hashicorp.com
+```
+
+# Pull charts into your helm directory
+```
+helm pull bitnami/postgresql --untar --untardir helm/
+helm pull hashicorp/vault --untar --untardir helm/
+```
+
+3. Configure Your values.yaml
+Before deploying, update the following values inside helm/student-api/values.yml
+
+4. Render and Validate the Helm Template
+```
+helm template helm/student-api
+```
+This command renders your Kubernetes YAML files locally without applying them, helping you catch errors early.
+
+6. Deploy to Kubernetes
+```
+helm upgrade --install student-api helm/student-api
+```
+
 
 
 

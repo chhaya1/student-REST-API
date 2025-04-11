@@ -113,10 +113,7 @@ spec:
                   name: db-secret
                   key: password
             - name: DATABASE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: student-api-config
-                  key: DATABASE_URL
+              value: "postgresql://postgres:$(POSTGRES_PASSWORD)@postgres:5432/student"
 
 ---
 

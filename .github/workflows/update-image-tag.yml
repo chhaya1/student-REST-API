@@ -1,0 +1,33 @@
+name: Update Image Tag
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/docker-build.yml'  
+
+jobs:
+  update-image-tag:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          git config user.name "chhaya1"
+          git config user.email "chhayasharma1401@gmail.com"
+
+      - name: Update image tag
+        run: |
+          IMAGE_TAG=$(date +%Y%m%d%H%M%S)  
+          echo "New Image Tag: $IMAGE_TAG"
+          
+          # Update values.yaml
+          sed -i "s|image: .*|image: chhaya786/student-api:$IMAGE_TAG|" helm/templates/values.yaml
+
+          git add helm/templates/values.yaml
+          git commit -m "Update image tag to $IMAGE_TAG"
+          git push origin main
