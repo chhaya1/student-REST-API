@@ -26,6 +26,6 @@ jobs:
           # Update values.yaml
           sed -i "s|image: .*|image: chhaya786/student-api:$IMAGE_TAG|" helm/student-api/values.yaml
 
-          git add helm/templates/values.yaml
+          git add helm/student-api/values.yaml
           git commit -m "Update image tag to $IMAGE_TAG"
           git push origin main
