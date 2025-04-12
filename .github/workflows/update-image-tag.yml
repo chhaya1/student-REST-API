@@ -15,6 +15,7 @@ jobs:
 
       - name: Set up Git
         run: |
+          git config --global core.attributesfile ~/.gitattributes
           git config user.name "chhaya1"
           git config user.email "chhayasharma1401@gmail.com"
 
