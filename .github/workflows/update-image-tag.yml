@@ -26,7 +26,7 @@ jobs:
           echo "New Image Tag: $IMAGE_TAG"
           
           # Update values.yaml
-          sed -i "s|image: .*|image: chhaya786/student-api:$IMAGE_TAG|" helm/templates/values.yaml
+          sed -i "s|image: .*|image: chhaya786/student-api:$IMAGE_TAG|" helm/values.yaml
 
           git add helm/templates/values.yaml
           git commit -m "Update image tag to $IMAGE_TAG"
