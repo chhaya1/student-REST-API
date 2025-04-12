@@ -459,7 +459,7 @@ helm pull bitnami/postgresql --untar --untardir helm/
 helm pull hashicorp/vault --untar --untardir helm/
 ```
 
-3. Configure Your values.yaml
+3. Configure values.yaml
 Before deploying, update the following values inside helm/student-api/values.yml
 
 4. Render and Validate the Helm Template
