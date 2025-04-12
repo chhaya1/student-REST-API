@@ -39,4 +39,4 @@ jobs:
       - name: Build and push Docker image
         run: make docker-push
         env:
-          DOCKER_IMAGE: chhaya786/student-api:1.0.3
+          DOCKER_IMAGE: chhaya786/student-api:1.0.2
