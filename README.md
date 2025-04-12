@@ -445,7 +445,7 @@ cd helm
 helm create student-api
 ```
 
-2. Pull Required Charts (PostgreSQL & Vault)
+2. Pull Required Charts (for PostgreSQL & Vault)
 
 # Add Helm repositories
 ```
