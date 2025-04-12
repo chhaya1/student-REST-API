@@ -13,6 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Configure Git properly
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
       - name: Set up Git
         run: |
           git config --global core.attributesfile ~/.gitattributes
