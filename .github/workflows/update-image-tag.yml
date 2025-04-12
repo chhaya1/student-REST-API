@@ -27,11 +27,10 @@ jobs:
           # Update only your values.yaml file
           sed -i "s|image: .*|image: chhaya786/student-api:$IMAGE_TAG|" helm/student-api/values.yaml
 
+          # Make sure git commands are scoped to your repo folder
           cd $GITHUB_WORKSPACE
-          git config --global --add safe.directory $GITHUB_WORKSPACE
 
-          # Disable Git attributes scanning
-          git config --global core.attributesfile /dev/null
+          git config --global --add safe.directory $GITHUB_WORKSPACE
 
           git add helm/student-api/values.yaml
           git commit -m "Update image tag to $IMAGE_TAG"
