@@ -7,7 +7,7 @@ vault:
     role: "student-api"
 
 deployment:
-  image: "chhaya786/student-api:1.0.2"
+  image: "chhaya786/student-api:20250414143349"
   replicas: 1
   containerPort: 8080
   env:
