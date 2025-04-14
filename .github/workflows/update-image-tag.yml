@@ -25,12 +25,19 @@ jobs:
           # Debug: Show updated values.yaml content
           cat helm/student-api/values.yaml
 
+          # Set Git user identity
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
           # Commit and push changes
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
           git add helm/student-api/values.yaml
           git commit -m "Update image tag to $IMAGE_TAG" || echo "No changes to commit"
+
+          # Use GitHub token for authentication
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/chhaya1/student-REST-API.git
           git push origin main || echo "No changes to push"
-        shell: /usr/bin/bash -e {0}
+
 
 
