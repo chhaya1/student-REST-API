@@ -36,7 +36,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image to Docker registry
         run: make docker-push
         env:
           DOCKER_IMAGE: chhaya786/student-api:1.0.2
