@@ -22,7 +22,6 @@ jobs:
           sed -i "s|image: \"chhaya786/student-api:.*\"|image: \"chhaya786/student-api:$IMAGE_TAG\"|" helm/student-api/values.yaml
           sed -i "s|image: \"postgres:.*\"|image: \"chhaya786/student-api:$IMAGE_TAG\"|" helm/student-api/values.yaml
 
-          # Debug: Show updated values.yaml content
           cat helm/student-api/values.yaml
 
           # Set Git user identity
