@@ -13,22 +13,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Update Image Tag in values.yaml
+      - name: Update image tag in values.yaml
         run: |
           IMAGE_TAG=$(date +%Y%m%d%H%M%S)
           echo "New Image Tag: $IMAGE_TAG"
-          
+
           # Update the image tag in values.yaml
-          sed -i "s|image: .*|image: chhaya786/student-api:$IMAGE_TAG|" helm/student-api/values.yaml
-          
-          # Set Git safe directory
+          sed -i "s|image: \"chhaya786/student-api:.*\"|image: \"chhaya786/student-api:$IMAGE_TAG\"|" helm/student-api/values.yaml
+          sed -i "s|image: \"postgres:.*\"|image: \"chhaya786/student-api:$IMAGE_TAG\"|" helm/student-api/values.yaml
+
+          # Debug: Show updated values.yaml content
+          cat helm/student-api/values.yaml
+
+          # Commit and push changes
+          cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-          
-          # Optional: Disable Git attributes scanning to avoid warnings
-          git config --global core.attributesfile /dev/null
-          
-          # Commit and push changes, suppress errors
           git add helm/student-api/values.yaml
-          git commit -m "Update image tag to $IMAGE_TAG" 2>/dev/null || echo "No changes to commit"
-          git push origin main 2>/dev/null || echo "No changes to push"
+          git commit -m "Update image tag to $IMAGE_TAG" || echo "No changes to commit"
+          git push origin main || echo "No changes to push"
+        shell: /usr/bin/bash -e {0}
+
 
