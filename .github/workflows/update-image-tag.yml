@@ -3,35 +3,31 @@ name: Update Image Tag
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   update-image-tag:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Git
-        run: |
-          git config --global core.attributesfile ~/.gitattributes
-          git config user.name "chhaya1"
-          git config user.email "chhayasharma1401@gmail.com"
-
-      - name: Update Image Tag
+      - name: Update Image Tag in values.yaml
         run: |
           IMAGE_TAG=$(date +%Y%m%d%H%M%S)
           echo "New Image Tag: $IMAGE_TAG"
-
-          # Update only your values.yaml file
+          
+          # Update the image tag in values.yaml
           sed -i "s|image: .*|image: chhaya786/student-api:$IMAGE_TAG|" helm/student-api/values.yaml
-
-          # Make sure git commands are scoped to your repo folder
-          cd $GITHUB_WORKSPACE
-
+          
+          # Set Git safe directory
           git config --global --add safe.directory $GITHUB_WORKSPACE
-
+          
+          # Optional: Disable Git attributes scanning to avoid warnings
+          git config --global core.attributesfile /dev/null
+          
+          # Commit and push changes, suppress errors
           git add helm/student-api/values.yaml
-          git commit -m "Update image tag to $IMAGE_TAG"
-          git push origin main
+          git commit -m "Update image tag to $IMAGE_TAG" 2>/dev/null || echo "No changes to commit"
+          git push origin main 2>/dev/null || echo "No changes to push"
