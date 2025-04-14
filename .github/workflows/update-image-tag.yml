@@ -20,25 +20,23 @@ jobs:
 
           # Update the image tag in values.yaml
           sed -i "s|image: \"chhaya786/student-api:.*\"|image: \"chhaya786/student-api:$IMAGE_TAG\"|" helm/student-api/values.yaml
-          sed -i "s|image: \"postgres:.*\"|image: \"chhaya786/student-api:$IMAGE_TAG\"|" helm/student-api/values.yaml
 
+          # Debug: show the updated file
           cat helm/student-api/values.yaml
 
-          # Set Git user identity
+          # Set the IMAGE_TAG env for later steps
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Configure Git
+        run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-
-          # Commit and push changes
-          cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Commit and Push changes
+        run: |
           git add helm/student-api/values.yaml
           git commit -m "Update image tag to $IMAGE_TAG" || echo "No changes to commit"
-
-          # Use GitHub token for authentication
-          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/chhaya1/student-REST-API.git
           git push origin main || echo "No changes to push"
-
-
-
-
-
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
