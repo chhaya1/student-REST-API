@@ -19,7 +19,8 @@ jobs:
           echo "New Image Tag: $IMAGE_TAG"
 
           # Correct sed command to update values.yaml properly
-          sed -i "s|^\([[:space:]]*image: \).*|\1\"chhaya786/student-api:$IMAGE_TAG\"|" helm/student-api/values.yaml
+          sed -i "s|^image:.*|image: chhaya786/student-api:$IMAGE_TAG|" helm/student-api/values.yaml
+
 
           cat helm/student-api/values.yaml  # 👈 Debug output after sed
 
